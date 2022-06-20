@@ -121,7 +121,7 @@ data = dict(
         ]),
     test=dict(
         type='CityscapesDataset',
-        data_root='/data/Code/mmsegmentation/data/cityscapes/',
+        data_root='data/cityscapes/',
         img_dir='leftImg8bit/val',
         ann_dir='gtFine/val',
         pipeline=[
