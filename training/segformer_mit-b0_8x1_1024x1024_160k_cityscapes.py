@@ -146,7 +146,7 @@ log_config = dict(
     interval=50, hooks=[dict(type='TensorboardLoggerHook', by_epoch=False)])
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = 'segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
+load_from = None
 resume_from = None
 workflow = [('train', 1)]
 cudnn_benchmark = True
