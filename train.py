@@ -19,6 +19,8 @@ from mmseg.datasets import build_dataset
 from mmseg.models import build_segmentor
 from mmseg.utils import (collect_env, get_device, get_root_logger,
                          setup_multi_processes)
+from datetime import datetime
+now = datetime.now()
 
 
 def parse_args():
@@ -122,7 +124,11 @@ def main():
     # work_dir is determined in this priority: CLI > segment in file > filename
     if args.work_dir is not None:
         # update configs according to CLI args if args.work_dir is not None
-        cfg.work_dir = args.work_dir
+        time = now.strftime("%d_%m %H:%M")
+        path = os.path.join(args.work_dir, time)
+        if not os.path.exists(path):
+            os.mkdir(path)
+        cfg.work_dir = path
     elif cfg.get('work_dir', None) is None:
         # use config filename as default work_dir if cfg.work_dir is None
         cfg.work_dir = osp.join('./work_dirs',

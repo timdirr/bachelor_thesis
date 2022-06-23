@@ -35,12 +35,12 @@ dataset_type = 'CityscapesDataset'
 data_root = 'data/cityscapes/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-crop_size = (1024, 1024)
+crop_size = (512, 512)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations'),
-    dict(type='Resize', img_scale=(2048, 1024), ratio_range=(0.5, 2.0)),
-    dict(type='RandomCrop', crop_size=(1024, 1024), cat_max_ratio=0.75),
+    dict(type='Resize', img_scale=(1024, 512), ratio_range=(0.5, 2.0)),
+    dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
     dict(
@@ -48,7 +48,7 @@ train_pipeline = [
         mean=[123.675, 116.28, 103.53],
         std=[58.395, 57.12, 57.375],
         to_rgb=True),
-    dict(type='Pad', size=(1024, 1024), pad_val=0, seg_pad_val=255),
+    dict(type='Pad', size=(512, 512), pad_val=0, seg_pad_val=255),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_semantic_seg'])
 ]
@@ -56,7 +56,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(2048, 1024),
+        img_scale=(1024, 512),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
@@ -82,9 +82,9 @@ data = dict(
             dict(type='LoadImageFromFile'),
             dict(type='LoadAnnotations'),
             dict(
-                type='Resize', img_scale=(2048, 1024), ratio_range=(0.5, 2.0)),
+                type='Resize', img_scale=(1024, 512), ratio_range=(0.5, 2.0)),
             dict(
-                type='RandomCrop', crop_size=(1024, 1024), cat_max_ratio=0.75),
+                type='RandomCrop', crop_size=(512, 512), cat_max_ratio=0.75),
             dict(type='RandomFlip', prob=0.5),
             dict(type='PhotoMetricDistortion'),
             dict(
@@ -92,7 +92,7 @@ data = dict(
                 mean=[123.675, 116.28, 103.53],
                 std=[58.395, 57.12, 57.375],
                 to_rgb=True),
-            dict(type='Pad', size=(1024, 1024), pad_val=0, seg_pad_val=255),
+            dict(type='Pad', size=(512, 512), pad_val=0, seg_pad_val=255),
             dict(type='DefaultFormatBundle'),
             dict(type='Collect', keys=['img', 'gt_semantic_seg'])
         ]),
@@ -105,7 +105,7 @@ data = dict(
             dict(type='LoadImageFromFile'),
             dict(
                 type='MultiScaleFlipAug',
-                img_scale=(2048, 1024),
+                img_scale=(1024, 512),
                 flip=False,
                 transforms=[
                     dict(type='Resize', keep_ratio=True),
@@ -128,7 +128,7 @@ data = dict(
             dict(type='LoadImageFromFile'),
             dict(
                 type='MultiScaleFlipAug',
-                img_scale=(2048, 1024),
+                img_scale=(1024, 512),
                 flip=False,
                 transforms=[
                     dict(type='Resize', keep_ratio=True),
