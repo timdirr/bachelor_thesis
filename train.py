@@ -124,8 +124,8 @@ def main():
     # work_dir is determined in this priority: CLI > segment in file > filename
     if args.work_dir is not None:
         # update configs according to CLI args if args.work_dir is not None
-        time = now.strftime("%d_%m %H:%M")
-        path = os.path.join(args.work_dir, time)
+        timenow = now.strftime("%d_%m %H:%M")
+        path = os.path.join(args.work_dir, timenow)
         if not os.path.exists(path):
             os.mkdir(path)
         cfg.work_dir = path
