@@ -21,10 +21,9 @@ Semantic Segmentation).
             Default: 'nearest-exact'.
     """
 
-    def __init__(self, interpolate_mode='nearest-exact', output_size=[512, 512], **kwargs):
+    def __init__(self, interpolate_mode='nearest-exact', **kwargs):
         super().__init__(input_transform='multiple_select', **kwargs)
 
-        self.output_size = output_size
         self.interpolate_mode = interpolate_mode
         num_inputs = len(self.in_channels)
 
@@ -57,7 +56,7 @@ Semantic Segmentation).
             outs.append(
                 resize(
                     input=conv(x),
-                    size=self.output_size,
+                    size=[x * 4 for x in inputs[0].shape[2:]],
                     mode=self.interpolate_mode))
 
         out = self.fusion_conv(torch.cat(outs, dim=1))
