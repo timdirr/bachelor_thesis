@@ -1,7 +1,7 @@
 _base_ = [
     'configs/segformer_mit-b0.py',
-    'configs/cityscapes_512x512.py',
-    'configs/default_runtime.py', 'configs/schedule_160k.py'
+    'configs/cityscapes_192x192.py',
+    'configs/default_runtime.py', 'configs/schedule_640k.py'
 ]
 
 checkpoint = 'pretrain/mit_b0_20220624-7e0fe6dd.pth'  # noqa

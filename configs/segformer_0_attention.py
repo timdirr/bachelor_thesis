@@ -22,10 +22,10 @@ model = dict(
     decode_head=dict(
         type='UNetAttentionHead',
         in_channels=[256, 160, 64, 32, 32, 32],
-        num_attention_modules=2,
-        num_layers=[2, 2],
-        num_heads=[8, 5],
-        patch_sizes=[3, 3],
+        num_attention_modules=0,
+        num_layers=[],
+        num_heads=[],
+        patch_sizes=[],
         in_index=[0, 1, 2, 3, 4, 5],
         channels=32,
         dropout_ratio=0.1,
@@ -36,3 +36,5 @@ model = dict(
     # model training and testing settings
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
+
+

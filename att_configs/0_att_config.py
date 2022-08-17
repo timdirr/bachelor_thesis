@@ -1,7 +1,8 @@
 _base_ = [
-    'configs/segformer_baseline.py',
-    'configs/cityscapes_192x192.py',
-    'configs/default_runtime.py', 'configs/schedule_160k.py'
+    '/data/Code/timformer/configs/segformer_0_attention.py',
+    '/data/Code/timformer/configs/cityscapes_192x192.py',
+    '/data/Code/timformer/configs/default_runtime.py', 
+    '/data/Code/timformer/configs/schedule_att.py'
 ]
 checkpoint = '/data/Code/timformer/transformed_keys.pth'  # noqa
 

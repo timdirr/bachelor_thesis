@@ -1,7 +1,8 @@
 _base_ = [
-    'configs/segformer_baseline.py',
-    'configs/cityscapes_192x192.py',
-    'configs/default_runtime.py', 'configs/schedule_160k.py'
+    '/data/Code/timformer/configs/segformer_4_attention.py',
+    '/data/Code/timformer/configs/cityscapes_192x192.py',
+    '/data/Code/timformer/configs/default_runtime.py', 
+    '/data/Code/timformer/configs/schedule_att_extra.py'
 ]
 checkpoint = '/data/Code/timformer/transformed_keys.pth'  # noqa
 
@@ -14,7 +15,7 @@ model = dict(
 optimizer = dict(
     _delete_=True,
     type='AdamW',
-    lr=0.00006,
+    lr=0.00001,
     betas=(0.9, 0.999),
     weight_decay=0.01,
     paramwise_cfg=dict(
@@ -26,12 +27,9 @@ optimizer = dict(
 
 lr_config = dict(
     _delete_=True,
-    policy='poly',
-    warmup='linear',
-    warmup_iters=500,
-    warmup_ratio=1e-6,
-    power=1.0,
-    min_lr=0.0,
+    policy='LinearAnnealing',
+    warmup=None,
+    min_lr_ratio=1.0,
     by_epoch=False)
 
 data = dict(samples_per_gpu=8, workers_per_gpu=8)

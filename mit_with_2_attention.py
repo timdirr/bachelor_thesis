@@ -1,12 +1,10 @@
 _base_ = [
-    'configs/segformer_baseline.py',
+    'configs/segformer_adjusted.py',
     'configs/cityscapes_192x192.py',
-    'configs/default_runtime.py', 'configs/schedule_160k.py'
+    'configs/default_runtime.py', 'configs/schedule_640k.py'
 ]
-checkpoint = '/data/Code/timformer/transformed_keys.pth'  # noqa
 
 model = dict(
-    backbone=dict(init_cfg=dict(type='Pretrained', checkpoint=checkpoint)),
     test_cfg=dict(mode='slide', crop_size=(192, 192), stride=(192, 192)))
     # test_cfg=dict(mode='slide', crop_size=(1024, 1024), stride=(768, 768)))
 
@@ -28,10 +26,10 @@ lr_config = dict(
     _delete_=True,
     policy='poly',
     warmup='linear',
-    warmup_iters=500,
+    warmup_iters=10000,
     warmup_ratio=1e-6,
     power=1.0,
     min_lr=0.0,
     by_epoch=False)
 
-data = dict(samples_per_gpu=8, workers_per_gpu=8)
+data = dict(samples_per_gpu=1, workers_per_gpu=1)

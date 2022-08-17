@@ -12,8 +12,8 @@ from mmcv.cnn.utils.weight_init import (constant_init, normal_init,
                                         trunc_normal_init)
 from mmcv.runner import BaseModule, ModuleList, Sequential
 
-from ..builder import BACKBONES
-from ..utils import PatchEmbed, nchw_to_nlc, nlc_to_nchw
+from mmcls.models.builder import BACKBONES
+from mmseg.models.utils import PatchEmbed, nchw_to_nlc, nlc_to_nchw
 
 
 class MixFFN(BaseModule):
@@ -452,4 +452,4 @@ class MixVisionTransformerFullRes(BaseModule):
             if i in self.out_indices:
                 outs.append(x)
 
-        return outs
+        return outs[-1].mean(dim=[2, 3])

@@ -20,19 +20,18 @@ model = dict(
         attn_drop_rate=0.0,
         drop_path_rate=0.1),
     decode_head=dict(
-        type='UNetAttentionHead',
-        in_channels=[256, 160, 64, 32, 32, 32],
-        num_attention_modules=2,
-        num_layers=[2, 2],
-        num_heads=[8, 5],
-        patch_sizes=[3, 3],
+        type='SegformerHead',
+        in_channels=[32, 32, 32, 64, 160, 256],
         in_index=[0, 1, 2, 3, 4, 5],
-        channels=32,
+        channels=256,
         dropout_ratio=0.1,
         num_classes=19,
+        norm_cfg=dict(type='SyncBN', requires_grad=True),
         align_corners=False,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
     # model training and testing settings
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
+
+
