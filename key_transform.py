@@ -12,11 +12,12 @@ def convert_mit(ckpt):
     new_ckpt = OrderedDict()
     # Process the concat between q linear weights and kv linear weights
     for k, v in ckpt.items():
-        if k.startswith('head'):
+        if k.startswith('xxx'):
             continue
         # patch embedding conversion
-        elif k.startswith('backbone'):
-            new_k = k.replace('backbone.', '')
+        elif k.startswith('layers'):
+            print(k, v)
+            new_k = k.replace('layers.', 'backbone.layers.')
             new_v = v
         else:
             new_k = k

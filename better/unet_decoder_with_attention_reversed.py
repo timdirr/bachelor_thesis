@@ -21,7 +21,7 @@ class UNetBlock(nn.Module):
 
 
 @HEADS.register_module()
-class UNetAttentionHead(BaseDecodeHead):
+class UNetAttentionHeadReversed(BaseDecodeHead):
     """The all mlp Head of segformer.
 
     This head is the implementation of
@@ -68,22 +68,32 @@ class UNetAttentionHead(BaseDecodeHead):
         for i in range(1, num_inputs):
             self.in_channels[i] = self.in_channels[i] * 2
         cur = 0
-        for i in range(num_attention_modules):
+        for i in range(num_inputs-num_attention_modules):
+            if i == 0:
+                self.layers.append(
+                    UNetBlock(self.in_channels[i], self.in_channels[i])
+                )
+            else:
+                self.layers.append(
+                    UNetBlock(self.in_channels[i], (self.in_channels[i] // 2))
+                )
+
+        for i in range(num_inputs-num_attention_modules, num_inputs):
             att_layer = nn.ModuleList()
             att = nn.ModuleList()
-            num_layer = num_layers[i]
-            embed_dims_i = embed_dims * num_heads[i]
+            num_layer = num_layers[i - (num_inputs - num_attention_modules)]
+            embed_dims_i = embed_dims * num_heads[i - (num_inputs - num_attention_modules)]
             att_layer.append(PatchEmbed(
                 in_channels=self.in_channels[i],
                 embed_dims=embed_dims_i,
-                kernel_size=patch_sizes[i],
+                kernel_size=patch_sizes[i - (num_inputs - num_attention_modules)],
                 stride=1,
-                padding=patch_sizes[i] // 2,
+                padding=patch_sizes[i - (num_inputs - num_attention_modules)] // 2,
                 norm_cfg=norm_cfg))
             for idx in range(num_layer):
                 att.append(TransformerEncoderLayer(
                     embed_dims=embed_dims_i,
-                    num_heads=num_heads[i],
+                    num_heads=num_heads[i - (num_inputs - num_attention_modules)],
                     feedforward_channels=mlp_ratio * embed_dims_i,
                     drop_rate=drop_rate,
                     attn_drop_rate=attn_drop_rate,
@@ -98,15 +108,6 @@ class UNetAttentionHead(BaseDecodeHead):
             self.layers.append(att_layer)
             cur += num_layer
 
-        for i in range(num_attention_modules, num_inputs):
-            if i == 0:
-                self.layers.append(
-                    UNetBlock(self.in_channels[i], self.in_channels[i])
-                )
-            else:
-                self.layers.append(
-                    UNetBlock(self.in_channels[i], (self.in_channels[i] // 2))
-                )
 
     def forward(self, inputs):
         # 4 inputs
@@ -134,18 +135,18 @@ class UNetAttentionHead(BaseDecodeHead):
 
         inputs = self._transform_inputs(inputs)
         inputs = inputs[::-1]
-        if self.num_attention_modules != 0:
+        if self.num_attention_modules == 6:
             x = self.apply_attention(inputs[0], self.layers[0])
         else:
             x = self.layers[0](inputs[0])
         for idx in range(len(inputs) - 1):
             x = self.upconvs[idx](x)
-            next = inputs[idx + 1]
-            x = torch.cat([x, next], dim=1)
-            if(idx < self.num_attention_modules - 1):
-                x = self.apply_attention(x, self.layers[idx + 1])
-            else:
+            next_input = inputs[idx + 1]
+            x = torch.cat([x, next_input], dim=1)
+            if idx < len(inputs) - self.num_attention_modules - 1:
                 x = self.layers[idx + 1](x)
+            else:
+                x = self.apply_attention(x, self.layers[idx + 1])
         out = self.cls_seg(x)
         return out
 
