@@ -99,9 +99,14 @@ class UNetAttentionHead(BaseDecodeHead):
             cur += num_layer
 
         for i in range(num_attention_modules, num_inputs):
-            self.layers.append(
-                UNetBlock(self.in_channels[i], (self.in_channels[i] // 2))
-            )
+            if i == 0:
+                self.layers.append(
+                    UNetBlock(self.in_channels[i], self.in_channels[i])
+                )
+            else:
+                self.layers.append(
+                    UNetBlock(self.in_channels[i], (self.in_channels[i] // 2))
+                )
 
     def forward(self, inputs):
         # 4 inputs
@@ -129,7 +134,10 @@ class UNetAttentionHead(BaseDecodeHead):
 
         inputs = self._transform_inputs(inputs)
         inputs = inputs[::-1]
-        x = self.apply_attention(inputs[0], self.layers[0])
+        if self.num_attention_modules != 0:
+            x = self.apply_attention(inputs[0], self.layers[0])
+        else:
+            x = self.layers[0](inputs[0])
         for idx in range(len(inputs) - 1):
             x = self.upconvs[idx](x)
             next = inputs[idx + 1]
@@ -146,6 +154,6 @@ class UNetAttentionHead(BaseDecodeHead):
         x, hw_shape = layer[0](x)
         for l in layer[1]:
             x = l(x, hw_shape)
-        # x = layer[2](x)
+        x = layer[2](x)
         x = nlc_to_nchw(x, hw_shape)
         return x

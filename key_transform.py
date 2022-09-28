@@ -17,7 +17,7 @@ def convert_mit(ckpt):
         # patch embedding conversion
         elif k.startswith('layers'):
             print(k, v)
-            new_k = k.replace('layers.', 'backbone.layers.')
+            new_k = k.replace('layers.', 'backbone.layers.', 1)
             new_v = v
         else:
             new_k = k

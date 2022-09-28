@@ -133,6 +133,21 @@ def testing_or_eval(args):
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
+    cfg.data['val']['img_dir']= 'leftImg8bit/val/munster'
+    cfg.data['test']['img_dir']= 'leftImg8bit/val/munster'
+
+    cfg.data['val']['ann_dir']= 'gtFine/val/munster'
+    cfg.data['test']['ann_dir']= 'gtFine/val/munster'
+
+        # val=dict(
+        #     img_dir='leftImg8bit/val/frankfurt',
+        #     ann_dir='gtFine/val/frankfurt',),
+        # test=dict(
+        #     img_dir='leftImg8bit/val/frankfurt',
+        #     ann_dir='gtFine/val/frankfurt'))
+
+
+
     # set multi-process settings
     setup_multi_processes(cfg)
 

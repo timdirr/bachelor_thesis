@@ -2,10 +2,13 @@ import argparse
 
 from mmcv import Config
 from mmcv.cnn import get_model_complexity_info
+from ptflops import get_model_complexity_info as get_model_complexity_info2
 from mmcv.cnn.utils.flops_counter import flops_to_string, params_to_string
 
 from mmseg.models import build_segmentor
 import torch
+import re
+import torch.nn as nn
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
@@ -18,6 +21,39 @@ def parse_args():
         help='input image size')
     args = parser.parse_args()
     return args
+
+def pass_to_sra_flops(x, H, W):
+    if x == 1:
+        return sra_flops(H // 32, W // 32,
+                          1,
+                          32,
+                          256) * 2
+    if x == 2:
+        return sra_flops(H // 16, W // 16,
+                          2,
+                          160,
+                          5) * 2
+    if x == 3:
+        return sra_flops(H // 8, W // 8,
+                          4,
+                          64,
+                          2) * 2
+    if x == 4:
+        return sra_flops(H // 4, W // 4,
+                          8,
+                          32,
+                          1) * 2
+    if x == 5:
+        return sra_flops(H // 2, W // 2,
+                          16,
+                          32,
+                          1) * 2
+
+    if x == 6:
+        return sra_flops(H, W,
+                          32,
+                          32,
+                          1) * 2
 
 def sra_flops(h, w, r, dim, num_heads):
     dim_h = dim / num_heads
@@ -32,50 +68,59 @@ def sra_flops(h, w, r, dim, num_heads):
 
 def get_tr_flops(net, input_shape):
     flops, params = get_model_complexity_info(net, input_shape, as_strings=False)
+    # if hasattr(layers, 'projection'):
+    #     print('hi')
     _, H, W = input_shape
-    net = net.backbone
-    try:
-        stage1 = sra_flops(H // 4, W // 4,
-                           net.block1[0].attn.sr_ratio,
-                           net.block1[0].attn.dim,
-                           net.block1[0].attn.num_heads) * len(net.block1)
-        stage2 = sra_flops(H // 8, W // 8,
-                           net.block2[0].attn.sr_ratio,
-                           net.block2[0].attn.dim,
-                           net.block2[0].attn.num_heads) * len(net.block2)
-        stage3 = sra_flops(H // 16, W // 16,
-                           net.block3[0].attn.sr_ratio,
-                           net.block3[0].attn.dim,
-                           net.block3[0].attn.num_heads) * len(net.block3)
-        stage4 = sra_flops(H // 32, W // 32,
-                           net.block4[0].attn.sr_ratio,
-                           net.block4[0].attn.dim,
-                           net.block4[0].attn.num_heads) * len(net.block4)
-    except:
-        stage1 = sra_flops(H // 4, W // 4,
-                           net.block1[0].attn.squeeze_ratio,
-                           64,
-                           net.block1[0].attn.num_heads) * len(net.block1)
-        stage2 = sra_flops(H // 8, W // 8,
-                           net.block2[0].attn.squeeze_ratio,
-                           128,
-                           net.block2[0].attn.num_heads) * len(net.block2)
-        stage3 = sra_flops(H // 16, W // 16,
-                           net.block3[0].attn.squeeze_ratio,
-                           320,
-                           net.block3[0].attn.num_heads) * len(net.block3)
-        stage4 = sra_flops(H // 32, W // 32,
-                           net.block4[0].attn.squeeze_ratio,
-                           512,
-                           net.block4[0].attn.num_heads) * len(net.block4)
-
-    print(stage1 + stage2 + stage3 + stage4)
-    flops += stage1 + stage2 + stage3 + stage4
+    i = 1
+    decoder_flops = 0
+    if hasattr(net.decode_head, 'layers'):
+        for l in net.decode_head.layers:
+            if not hasattr(l, 'conv1'):
+                decoder_flops = decoder_flops + pass_to_sra_flops(i, H, W)
+            i = i + 1
+    print(decoder_flops)
+    backbone1 = sra_flops(H // 4, W // 4,
+                       8,
+                       32,
+                       1) * 2
+    backbone2 = sra_flops(H // 8, W // 8,
+                       4,
+                       64,
+                       2) * 2
+    backbone3 = sra_flops(H // 16, W // 16,
+                       2,
+                       160,
+                       5) * 2
+    backbone4 = sra_flops(H // 32, W // 32,
+                       1,
+                       32,
+                       256) * 2
+    # except:
+    #     stage1 = sra_flops(H // 4, W // 4,
+    #                        net.block1[0].attn.squeeze_ratio,
+    #                        64,
+    #                        net.block1[0].attn.num_heads) * len(net.block1)
+    #     stage2 = sra_flops(H // 8, W // 8,
+    #                        net.block2[0].attn.squeeze_ratio,
+    #                        128,
+    #                        net.block2[0].attn.num_heads) * len(net.block2)
+    #     stage3 = sra_flops(H // 16, W // 16,
+    #                        net.block3[0].attn.squeeze_ratio,
+    #                        320,
+    #                        net.block3[0].attn.num_heads) * len(net.block3)
+    #     stage4 = sra_flops(H // 32, W // 32,
+    #                        net.block4[0].attn.squeeze_ratio,
+    #                        512,
+    #                        net.block4[0].attn.num_heads) * len(net.block4)
+    #
+    print(flops_to_string(decoder_flops))
+    print(flops_to_string(backbone1 + backbone2 + backbone3 + backbone4))
+    flops += decoder_flops + backbone1 + backbone2 + backbone3 + backbone4
     return flops_to_string(flops), params_to_string(params)
 
-def main():
+def running_main(args):
 
-    args = parse_args()
+    #args = parse_args()
 
     if len(args.shape) == 1:
         input_shape = (3, args.shape[0], args.shape[0])
@@ -86,6 +131,7 @@ def main():
 
     cfg = Config.fromfile(args.config)
     cfg.model.pretrained = None
+    cfg.data = dict(samples_per_gpu=1, workers_per_gpu=1)
     model = build_segmentor(
         cfg.model,
         train_cfg=cfg.get('train_cfg'),
@@ -100,21 +146,31 @@ def main():
             format(model.__class__.__name__))
 
     # from IPython import embed; embed()
-    if hasattr(model.backbone, 'block1'):
+    # print(len(model.backbone.layers[0][1]))
+    if hasattr(model, 'backbone'):
         print('#### get transformer flops ####')
+        # layers = model.backbone.layers
+        # new_layers = nn.ModuleList()
+        # for layer in layers:
+        #     if len(layer[1]) != 0:
+        #         new_layers.append(layer)
+        # print(new_layers)
+        # print(model)
         with torch.no_grad():
             flops, params = get_tr_flops(model, input_shape)
     else:
         print('#### get CNN flops ####')
-        flops, params = get_model_complexity_info(model, input_shape)
+        #flops, params = get_model_complexity_info(model, input_shape)
 
     split_line = '=' * 30
-    print('{0}\nInput shape: {1}\nFlops: {2}\nParams: {3}\n{0}'.format(
-        split_line, input_shape, flops, params))
-    print('!!!Please be cautious if you use the results in papers. '
-          'You may need to check if all ops are supported and verify that the '
-          'flops computation is correct.')
+    # print('{0}\nInput shape: {1}\nFlops: {2}\nParams: {3}\n{0}'.format(
+    #     split_line, input_shape, flops, params))
+    # print('!!!Please be cautious if you use the results in papers. '
+    #       'You may need to check if all ops are supported and verify that the '
+    #       'flops computation is correct.')
+    print(params)
+    return float(re.findall("\d+\.\d+",flops)[0]), float(re.findall("\d+\.\d+",params)[0])
 
 
 if __name__ == '__main__':
-    main()
+    running_main()

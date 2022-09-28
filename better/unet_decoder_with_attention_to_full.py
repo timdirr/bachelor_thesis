@@ -58,7 +58,6 @@ class UNetAttentionHeadFull(BaseDecodeHead):
         num_inputs = len(self.in_channels)
 
         assert num_inputs == len(self.in_index)
-        assert num_attention_modules <= num_inputs
 
         self.layers = nn.ModuleList()
 
@@ -74,7 +73,7 @@ class UNetAttentionHeadFull(BaseDecodeHead):
         for i in range(1, num_inputs):
             self.in_channels[i] = self.in_channels[i] * 2
         cur = 0
-        for i in range(num_attention_modules):
+        for i in range(min(num_attention_modules, num_inputs)):
             att_layer = nn.ModuleList()
             att = nn.ModuleList()
             num_layer = num_layers[i]
