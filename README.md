@@ -10,7 +10,7 @@ The field of computer vision is deeply intertwined with neural networks, as they
 
 Due to the inherent complexity of this task, many networks output segmentation maps of lower resolution than the input image to reduce computational burden. These lower-size masks then typically get resized to full image resolution to compare them to the ground truth map. This practice can lead to a **loss in performance**, especially in applications where small details around the edges of objects are of importance.
 
-## 🚀 Our Solution
+## 🚀 My Solution
 
 This work focuses on designing **three novel decoder frameworks** that can output segmentation maps with enhanced resolution and accuracy:
 
