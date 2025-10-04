@@ -1,4 +1,4 @@
-# Enhanced Semantic Segmentation with Attention-Based Decoder Frameworks
+# Decoder Architectures for Retaining Full Resolution in Semantic Segmentation
 
 Welcome to my bachelor's thesis repository! This project explores advanced decoder architectures for semantic segmentation, focusing on improving output resolution and accuracy compared to traditional approaches.
 
